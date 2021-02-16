@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Routine.Api.DbContexts;
+using Routine.Api.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +33,12 @@ namespace Routine.Api
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Routine.Api", Version = "v1" });
+            });
+
+            services.AddScoped<ICompanyRepository, CompanyRepository>();
+            services.AddDbContext<RoutineDbContext>(options =>
+            {
+                options.UseSqlite("Data Source=routine.db");
             });
         }
 
