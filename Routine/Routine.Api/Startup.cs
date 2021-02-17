@@ -52,12 +52,14 @@ namespace Routine.Api
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Routine.Api v1"));
             }
 
-            app.UseRouting();
+            app.UseRouting();//用来标记路由决策在请求管道里发生的位置，也就是在这里会选择端点
 
             app.UseAuthorization();
 
+            //用来标记选择好的端点在请求管道的什么地方来执行
             app.UseEndpoints(endpoints =>
             {
+                //基于属性的路由
                 endpoints.MapControllers();
             });
         }
