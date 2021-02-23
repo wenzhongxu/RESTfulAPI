@@ -22,8 +22,29 @@ namespace Routine.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCompanies()
         {
-            var companyies = await _companyRepository.GetCompaniesAsync();
-            return new JsonResult(companyies);
+            var companies = await _companyRepository.GetCompaniesAsync();
+            return Ok(companies);
+        }
+
+        [HttpGet("{companyId}")]
+        public async Task<IActionResult> GetCompanies(Guid companyId)
+        {
+            /*
+            //当多线程请求时，判断存在后，但未查询时，资源被删除了，会出错
+            var exist = await _companyRepository.CompanyExistsAsync(companyId);
+            if (!exist)
+            {
+                return NotFound();
+            }
+            */
+
+            var company = await _companyRepository.GetCompanyAsync(companyId);
+
+            if (company == null)
+            {
+                return NotFound();
+            }
+            return Ok(company);
         }
     }
 }
