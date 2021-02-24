@@ -33,6 +33,9 @@ namespace Routine.Api
             {
                 setup.ReturnHttpNotAcceptable = true; //如果请求的类型和服务器所支持的类型不一致时，返回406
             }).AddXmlDataContractSerializerFormatters(); //添加xml格式化器。支持输入和输出
+
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());//注册automapper服务
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Routine.Api", Version = "v1" });
