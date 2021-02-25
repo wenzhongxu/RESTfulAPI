@@ -11,7 +11,7 @@ namespace Routine.Api.Controllers
 {
     [ApiController]
     [Route("api/companies/{companyId}/employees")]
-    public class EmployeesController: ControllerBase
+    public class EmployeesController : ControllerBase
     {
         private readonly IMapper _mapper;
         private readonly ICompanyRepository _companyRepository;
@@ -23,8 +23,14 @@ namespace Routine.Api.Controllers
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
         }
 
-        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees(Guid companyId)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployeesForComapny(Guid companyId)
         {
+            if (!await _companyRepository.CompanyExistsAsync(companyId))
+            {
+                return NotFound();
+            }
+
             var employees = await _companyRepository.GetEmployeesAsync(companyId);
 
             var employeeDtos = _mapper.Map<IEnumerable<EmployeeDto>>(employees);
