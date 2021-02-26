@@ -37,5 +37,24 @@ namespace Routine.Api.Controllers
 
             return Ok(employeeDtos);
         }
+
+        [HttpGet("{employeeId}")]
+        public async Task<ActionResult<EmployeeDto>> GetEmployeeForComapny(Guid companyId, Guid employeeId)
+        {
+            if (!await _companyRepository.CompanyExistsAsync(companyId))
+            {
+                return NotFound();
+            }
+
+            var employee = await _companyRepository.GetEmployeeAsync(companyId, employeeId);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            var employeeDto = _mapper.Map<EmployeeDto>(employee);
+
+            return Ok(employeeDto);
+        }
     }
 }
