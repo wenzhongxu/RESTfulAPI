@@ -8,7 +8,7 @@ namespace Routine.Api.Services
 {
     public interface ICompanyRepository
     {
-        Task<IEnumerable<Employee>> GetEmployeesAsync(Guid companyId, string genderDisplay);
+        Task<IEnumerable<Employee>> GetEmployeesAsync(Guid companyId, string genderDisplay, string q);
 
         Task<Employee> GetEmployeeAsync(Guid companyId, Guid employeeId);
 

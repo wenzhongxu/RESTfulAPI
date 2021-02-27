@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Routine.Api.Services
 {
-    public class CompanyRepository: ICompanyRepository
+    public class CompanyRepository : ICompanyRepository
     {
         private readonly RoutineDbContext _context;
 
@@ -17,22 +17,35 @@ namespace Routine.Api.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeesAsync(Guid companyId, string genderDisplay)
+        public async Task<IEnumerable<Employee>> GetEmployeesAsync(Guid companyId, string genderDisplay, string q)
         {
             if (companyId == Guid.Empty)
             {
                 throw new ArgumentNullException(nameof(companyId));
             }
 
-            if (string.IsNullOrWhiteSpace(genderDisplay))
+            if (string.IsNullOrWhiteSpace(genderDisplay) && string.IsNullOrWhiteSpace(q))
             {
                 return await _context.Employees.Where(x => x.CompanyId == companyId).OrderBy(x => x.EmployeeNo).ToListAsync();
             }
 
-            var genderStr = genderDisplay.Trim();
-            var gender = Enum.Parse<Gender>(genderStr);
+            var items = _context.Employees.Where(x => x.CompanyId == companyId);
 
-            return await _context.Employees.Where(x => x.CompanyId == companyId && x.Gender == gender).OrderBy(x => x.EmployeeNo).ToListAsync();
+            if (!string.IsNullOrWhiteSpace(genderDisplay))
+            {
+                genderDisplay = genderDisplay.Trim();
+                var gender = Enum.Parse<Gender>(genderDisplay);
+
+                items = items.Where(x => x.Gender == gender);
+            }
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                q = q.Trim();
+                items = items.Where(x => x.EmployeeNo.Contains(q) || x.FirstName.Contains(q) || x.LastName.Contains(q));
+            }
+
+            return await items.OrderBy(x => x.EmployeeNo).ToListAsync();
 
 
         }
@@ -71,7 +84,7 @@ namespace Routine.Api.Services
 
 
         public void UpdateEmployee(Employee employee)
-        { 
+        {
 
         }
 
@@ -126,7 +139,7 @@ namespace Routine.Api.Services
 
         public void UpdateCompany(Company company)
         {
-            
+
         }
 
         public void DeletCompany(Company company)
