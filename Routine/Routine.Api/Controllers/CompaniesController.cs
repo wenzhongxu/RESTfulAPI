@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Routine.Api.DtoParameters;
 using Routine.Api.Models;
 using Routine.Api.Services;
 using System;
@@ -24,9 +25,9 @@ namespace Routine.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CompanyDto>>> GetCompanies()
+        public async Task<ActionResult<IEnumerable<CompanyDto>>> GetCompanies([FromQuery] CompanyDtoParameters parameters)
         {
-            var companies = await _companyRepository.GetCompaniesAsync();
+            var companies = await _companyRepository.GetCompaniesAsync(parameters);
 
             var companyDtos = _mapper.Map<IEnumerable<CompanyDto>>(companies);
 

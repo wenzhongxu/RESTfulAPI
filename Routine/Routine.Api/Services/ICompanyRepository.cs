@@ -1,4 +1,5 @@
-﻿using Routine.Api.Entities;
+﻿using Routine.Api.DtoParameters;
+using Routine.Api.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace Routine.Api.Services
 
         void DeleteEmployee(Employee employee);
 
-        Task<IEnumerable<Company>> GetCompaniesAsync();
+        Task<IEnumerable<Company>> GetCompaniesAsync(CompanyDtoParameters parameters);
 
         Task<Company> GetCompanyAsync(Guid companyId);
 
