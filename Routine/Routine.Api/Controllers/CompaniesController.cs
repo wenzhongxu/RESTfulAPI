@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Routine.Api.DtoParameters;
+using Routine.Api.Entities;
 using Routine.Api.Models;
 using Routine.Api.Services;
 using System;
@@ -34,8 +35,8 @@ namespace Routine.Api.Controllers
             return Ok(companyDtos);
         }
 
-        [HttpGet("{companyId}")]
-        public async Task<ActionResult<CompanyDto>> GetCompanies(Guid companyId)
+        [HttpGet("{companyId}", Name = nameof(GetCompany))]
+        public async Task<ActionResult<CompanyDto>> GetCompany(Guid companyId)
         {
             /*
             //当多线程请求时，判断存在后，但未查询时，资源被删除了，会出错
@@ -53,6 +54,20 @@ namespace Routine.Api.Controllers
                 return NotFound();
             }
             return Ok(_mapper.Map<CompanyDto>(company));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<CompanyDto>> CreateCompany(CompanyAddDto company)
+        {
+            var entity = _mapper.Map<Company>(company);
+
+            _companyRepository.AddCompany(entity);
+
+            await _companyRepository.SaveAsync();
+
+            var returnDto = _mapper.Map<CompanyDto>(entity);
+
+            return CreatedAtRoute(nameof(GetCompany), new { companyId = returnDto.Id }, returnDto);
         }
     }
 }
