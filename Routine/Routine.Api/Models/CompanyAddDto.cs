@@ -17,5 +17,7 @@ namespace Routine.Api.Models
 
         public string Product { get; set; }
 
+        public ICollection<EmployeeAddDto> Employees { get; set; } = new List<EmployeeAddDto>();
+
     }
 }
