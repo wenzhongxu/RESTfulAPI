@@ -78,7 +78,7 @@ namespace Routine.Api.Controllers
         }
 
         [HttpPut("{employeeId}")]
-        public async Task<IActionResult> UpdateEmployeeForCompany(Guid companyId, Guid employeeId, EmployeeUpdateDto employee)
+        public async Task<ActionResult<EmployeeAddDto>> UpdateEmployeeForCompany(Guid companyId, Guid employeeId, EmployeeUpdateDto employee)
         {
             if (!await _companyRepository.CompanyExistsAsync(companyId))
             {
@@ -88,7 +88,18 @@ namespace Routine.Api.Controllers
             var employeeEntity = await _companyRepository.GetEmployeeAsync(companyId, employeeId);
             if (employeeEntity == null)
             {
-                return NotFound();
+                //return NotFound();
+                //当资源不存在时，不返回404 而是创建它
+                var employeeToAddEntity = _mapper.Map<Employee>(employee);
+                employeeToAddEntity.Id = employeeId;
+
+                _companyRepository.AddEmployee(companyId, employeeToAddEntity);
+
+                await _companyRepository.SaveAsync();
+
+                var returnDto = _mapper.Map<EmployeeDto>(employeeToAddEntity);
+
+                return CreatedAtRoute(nameof(GetEmployeeForComapny), new { companyId, employeeId = returnDto.Id }, returnDto);
             }
 
             _mapper.Map(employee, employeeEntity);// entity转化为updatedto 传进来的employee更新到updatedto updatedto映射回entity
