@@ -76,5 +76,28 @@ namespace Routine.Api.Controllers
 
             return CreatedAtRoute(nameof(GetEmployeeForComapny), new { companyId, employeeId = returnDto.Id }, returnDto);
         }
+
+        [HttpPut("{employeeId}")]
+        public async Task<IActionResult> UpdateEmployeeForCompany(Guid companyId, Guid employeeId, EmployeeUpdateDto employee)
+        {
+            if (!await _companyRepository.CompanyExistsAsync(companyId))
+            {
+                return NotFound();
+            }
+
+            var employeeEntity = await _companyRepository.GetEmployeeAsync(companyId, employeeId);
+            if (employeeEntity == null)
+            {
+                return NotFound();
+            }
+
+            _mapper.Map(employee, employeeEntity);// entity转化为updatedto 传进来的employee更新到updatedto updatedto映射回entity
+
+            _companyRepository.UpdateEmployee(employeeEntity);
+
+            await _companyRepository.SaveAsync();
+
+            return NoContent();
+        }
     }
 }

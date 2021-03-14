@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Routine.Api.Models
 {
-    public class EmployeeAddDto: EmployeeAddOrUpdateDto
+    public class EmployeeUpdateDto : EmployeeAddOrUpdateDto
     {
     }
 }
