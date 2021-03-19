@@ -76,5 +76,23 @@ namespace Routine.Api.Controllers
             Response.Headers.Add("Allow", "GET,POST,OPTIONS");
             return Ok();
         }
+
+        [HttpDelete("{companyId}")]
+        public async Task<IActionResult> DeleteCompany(Guid companyId)
+        {
+            var companyEntity = await _companyRepository.GetCompanyAsync(companyId);
+
+            if (companyEntity == null)
+            {
+                return NotFound();
+            }
+
+            await _companyRepository.GetEmployeesAsync(companyId, null, null);//级联删除为什么要先查出来？不查可不可以？
+
+            _companyRepository.DeletCompany(companyEntity);
+            await _companyRepository.SaveAsync();
+
+            return NoContent();
+        }
     }
 }

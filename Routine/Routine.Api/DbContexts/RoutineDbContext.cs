@@ -31,7 +31,9 @@ namespace Routine.Api.DbContexts
                 .HasOne(x => x.Company)
                 .WithMany(x => x.Employees)
                 .HasForeignKey(x => x.CompanyId)
-                .OnDelete(DeleteBehavior.Restrict);
+                //.OnDelete(DeleteBehavior.Restrict)//不允许级联删除
+                .OnDelete(DeleteBehavior.Cascade) // 允许级联删除
+                ;
 
 
             #region 增加种子数据

@@ -2,6 +2,7 @@
 using Routine.Api.DbContexts;
 using Routine.Api.DtoParameters;
 using Routine.Api.Entities;
+using Routine.Api.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -96,16 +97,11 @@ namespace Routine.Api.Services
         }
 
 
-        public async Task<IEnumerable<Company>> GetCompaniesAsync(CompanyDtoParameters parameters)
+        public async Task<PagedList<Company>> GetCompaniesAsync(CompanyDtoParameters parameters)
         {
             if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
-            }
-
-            if (string.IsNullOrWhiteSpace(parameters.CompanyName) && string.IsNullOrWhiteSpace(parameters.SearchTerm))
-            {
-                return await _context.Companies.ToListAsync();
             }
 
             var queryExpression = _context.Companies as IQueryable<Company>;
@@ -126,7 +122,7 @@ namespace Routine.Api.Services
                 queryExpression = queryExpression.Where(x => x.Name.Contains(parameters.SearchTerm) || x.Introduction.Contains(parameters.CompanyName));
             }
 
-            return await queryExpression.ToListAsync();
+            return await PagedList<Company>.CreateAsync(queryExpression, parameters.PageNumber, parameters.PageSize);
         }
 
         public async Task<Company> GetCompanyAsync(Guid companyId)
