@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Serialization;
 using Routine.Api.DbContexts;
 using Routine.Api.Services;
 using System;
@@ -33,7 +34,34 @@ namespace Routine.Api
             services.AddControllers(setup =>
             {
                 setup.ReturnHttpNotAcceptable = true; //如果请求的类型和服务器所支持的类型不一致时，返回406
-            }).AddXmlDataContractSerializerFormatters(); //添加xml格式化器。支持输入和输出
+            })
+                .AddNewtonsoftJson(setup =>
+                {
+                    setup.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                })
+                .AddXmlDataContractSerializerFormatters() //添加xml格式化器。支持输入和输出
+                .ConfigureApiBehaviorOptions(setup =>
+                {
+                    setup.InvalidModelStateResponseFactory = context =>
+                    {
+                        var problemDetails = new ValidationProblemDetails(context.ModelState)
+                        {
+                            Type = "http://www.baidu.com",
+                            Title = "有错误！",
+                            Status = StatusCodes.Status422UnprocessableEntity,
+                            Detail = "请看详细信息",
+                            Instance = context.HttpContext.Request.Path
+                        };
+
+                        problemDetails.Extensions.Add("traceId", context.HttpContext.TraceIdentifier);
+
+                        return new UnprocessableEntityObjectResult(problemDetails)
+                        {
+                            ContentTypes = { "application/problem+json" }
+                        };
+                    };
+                })
+                ;
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());//注册automapper服务
 
