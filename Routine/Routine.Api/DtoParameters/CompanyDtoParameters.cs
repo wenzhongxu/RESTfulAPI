@@ -20,5 +20,7 @@ namespace Routine.Api.DtoParameters
             set => _pageSize = (value > maxPageSize) ? maxPageSize : value;
         }
 
+        public string OrderBy { get; set; } = "CompanyName";
+
     }
 }
