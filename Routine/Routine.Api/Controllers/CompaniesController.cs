@@ -109,7 +109,7 @@ namespace Routine.Api.Controllers
                 return NotFound();
             }
 
-            await _companyRepository.GetEmployeesAsync(companyId, null, null);//级联删除为什么要先查出来？不查可不可以？
+            await _companyRepository.GetEmployeesAsync(companyId, null);//级联删除为什么要先查出来？不查可不可以？
 
             _companyRepository.DeletCompany(companyEntity);
             await _companyRepository.SaveAsync();

@@ -3,6 +3,7 @@ using Routine.Api.DbContexts;
 using Routine.Api.DtoParameters;
 using Routine.Api.Entities;
 using Routine.Api.Helpers;
+using Routine.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,12 @@ namespace Routine.Api.Services
     {
         private readonly RoutineDbContext _context;
 
-        public CompanyRepository(RoutineDbContext context)
+        private readonly IPropertyMappingService _propertyMappingService;
+
+        public CompanyRepository(RoutineDbContext context, IPropertyMappingService propertyMappingService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
         }
 
         public async Task<IEnumerable<Employee>> GetEmployeesAsync(Guid companyId, EmployeeDtoParameters parameters)
@@ -52,7 +56,9 @@ namespace Routine.Api.Services
             //    }
             //}
             // 上面的排序纯人肉，需要一堆的switch，下面采用映射
-            //items.ApplySort(parameters.OrderBy, mappingDictionary);
+
+            var mappingDictionary = _propertyMappingService.GetPropertyMapping<EmployeeDto, Employee>();
+            items = items.ApplySort(parameters.OrderBy, mappingDictionary);
 
             return await items.ToListAsync();
 
