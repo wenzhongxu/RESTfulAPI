@@ -22,18 +22,25 @@ namespace Routine.Api.Controllers
         private readonly ICompanyRepository _companyRepository;
         private readonly IMapper _mapper;
         private readonly IPropertyMappingService _propertyMappingService;
+        private readonly IPropertyCheckerService _propertyCheckerService;
 
-        public CompaniesController(ICompanyRepository companyRepository, IMapper mapper, IPropertyMappingService propertyMappingService)
+        public CompaniesController(ICompanyRepository companyRepository, IMapper mapper, IPropertyMappingService propertyMappingService, IPropertyCheckerService propertyCheckerService)
         {
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
+            _propertyCheckerService = propertyCheckerService ?? throw new ArgumentNullException(nameof(propertyCheckerService));
         }
 
         [HttpGet(Name = nameof(GetCompanies))]
         public async Task<IActionResult> GetCompanies([FromQuery] CompanyDtoParameters parameters)
         {
             if (!_propertyMappingService.ValidMappingExistsFor<CompanyDto, Company>(parameters.OrderBy))
+            {
+                return BadRequest();
+            }
+
+            if (!_propertyCheckerService.TypeHasProperties<CompanyDto>(parameters.Fields))
             {
                 return BadRequest();
             }
@@ -65,7 +72,7 @@ namespace Routine.Api.Controllers
         }
 
         [HttpGet("{companyId}", Name = nameof(GetCompany))]
-        public async Task<ActionResult<CompanyDto>> GetCompany(Guid companyId)
+        public async Task<IActionResult> GetCompany(Guid companyId, string fields)
         {
             /*
             //当多线程请求时，判断存在后，但未查询时，资源被删除了，会出错
@@ -76,13 +83,18 @@ namespace Routine.Api.Controllers
             }
             */
 
+            if (!_propertyCheckerService.TypeHasProperties<CompanyDto>(fields))
+            {
+                return BadRequest();
+            }
+
             var company = await _companyRepository.GetCompanyAsync(companyId);
 
             if (company == null)
             {
                 return NotFound();
             }
-            return Ok(_mapper.Map<CompanyDto>(company));
+            return Ok(company.ShapeData(fields));
         }
 
         [HttpPost]
