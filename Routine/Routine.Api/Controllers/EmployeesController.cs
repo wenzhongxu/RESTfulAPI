@@ -30,7 +30,7 @@ namespace Routine.Api.Controllers
             _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
         }
 
-        [HttpGet]
+        [HttpGet(Name = nameof(GetEmployeesForComapny))]
         public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployeesForComapny(Guid companyId, [FromQuery] EmployeeDtoParameters parameters)
         {
             if (!await _companyRepository.CompanyExistsAsync(companyId))
@@ -64,7 +64,7 @@ namespace Routine.Api.Controllers
             return Ok(employeeDto);
         }
 
-        [HttpPost]
+        [HttpPost(Name = nameof(CreateEmployeeForCompany))]
         public async Task<ActionResult<EmployeeDto>> CreateEmployeeForCompany(Guid companyId, EmployeeAddDto employee)
         {
             if (!await _companyRepository.CompanyExistsAsync(companyId))
