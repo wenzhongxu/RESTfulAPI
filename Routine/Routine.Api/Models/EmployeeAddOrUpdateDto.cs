@@ -28,7 +28,7 @@ namespace Routine.Api.Models
         public Gender Gender { get; set; }
 
         [Display(Name = "出生日期")]
-        public DateTimeOffset DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

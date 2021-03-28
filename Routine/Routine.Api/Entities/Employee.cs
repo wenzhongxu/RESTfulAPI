@@ -16,7 +16,7 @@ namespace Routine.Api.Entities
 
         public Gender Gender { get; set; }
 
-        public DateTimeOffset DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
         public Company Company { get; set; }
     }
