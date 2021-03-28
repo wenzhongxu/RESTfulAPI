@@ -116,7 +116,7 @@ namespace Routine.Api.Controllers
             return Ok(linkedDict);
         }
 
-        [HttpPost]
+        [HttpPost(Name = nameof(CreateCompany))]
         public async Task<ActionResult<CompanyDto>> CreateCompany(CompanyAddDto company)
         {
             var entity = _mapper.Map<Company>(company);
