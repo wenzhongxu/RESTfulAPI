@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using Routine.Api.DtoParameters;
 using Routine.Api.Entities;
 using Routine.Api.Helpers;
@@ -82,8 +83,15 @@ namespace Routine.Api.Controllers
             return Ok(linkedCollectionResource);
         }
 
+        //在方法上支持media type
+        [Produces("application/json",
+            "application/vnd.company.hateoas+json",
+            "application/vnd.company.company.friendly.hateoas+json",
+            "application/vnd.company.company.friendly+json",
+            "application/vnd.company.company.full+json",
+            "application/vnd.company.company.full.hateoas+json")]
         [HttpGet("{companyId}", Name = nameof(GetCompany))]
-        public async Task<IActionResult> GetCompany(Guid companyId, string fields)
+        public async Task<IActionResult> GetCompany(Guid companyId, string fields, [FromHeader(Name = "Accept")] string mediaType)
         {
             /*
             //当多线程请求时，判断存在后，但未查询时，资源被删除了，会出错
@@ -93,6 +101,11 @@ namespace Routine.Api.Controllers
                 return NotFound();
             }
             */
+
+            if (!MediaTypeHeaderValue.TryParse(mediaType, out MediaTypeHeaderValue parsedMediaType))
+            {
+                return BadRequest();
+            }
 
             if (!_propertyCheckerService.TypeHasProperties<CompanyDto>(fields))
             {
@@ -106,14 +119,39 @@ namespace Routine.Api.Controllers
                 return NotFound();
             }
 
-            var links = CreateLinksForCompany(companyId, fields);
+            var includeLinks = parsedMediaType.SubTypeWithoutSuffix.EndsWith("hateoas", StringComparison.InvariantCultureIgnoreCase);
 
-            var linkedDict = _mapper.Map<CompanyDto>(company).ShapeData(fields)
-                as IDictionary<string, object>;
+            IEnumerable<LinkDto> myLinks = new List<LinkDto>();
 
-            linkedDict.Add("links", links);
+            if (includeLinks)
+            {
+                myLinks = CreateLinksForCompany(companyId, fields);
+            }
 
-            return Ok(linkedDict);
+            var primaryMediaType = includeLinks ? parsedMediaType.SubTypeWithoutSuffix.Substring(0, parsedMediaType.SubTypeWithoutSuffix.Length - 8) : parsedMediaType.SubTypeWithoutSuffix;
+
+            if (primaryMediaType == "vnd.company.company.full")
+            {
+                var full = _mapper.Map<CompanyFullDto>(company).ShapeData(fields) as IDictionary<string, object>;
+
+                if (includeLinks)
+                {
+                    full.Add("links", myLinks);
+                }
+
+                return Ok(full);
+
+            }
+
+            var friendly = _mapper.Map<CompanyDto>(company).ShapeData(fields) as IDictionary<string, object>;
+
+            if (includeLinks)
+            {
+                friendly.Add("links", myLinks);
+            }
+
+            return Ok(friendly);
+            
         }
 
         [HttpPost(Name = nameof(CreateCompany))]
