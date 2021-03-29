@@ -1,3 +1,4 @@
+using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -32,9 +33,27 @@ namespace Routine.Api
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddHttpCacheHeaders(expires =>
+            {
+                // 过期模型设置
+                expires.MaxAge = 60;
+                expires.CacheLocation = CacheLocation.Private;
+            }, validation =>
+            {
+                //验证模型设置
+                validation.MustRevalidate = true;
+            });
+
+            services.AddResponseCaching(); //注册缓存服务
+
             services.AddControllers(setup =>
             {
                 setup.ReturnHttpNotAcceptable = true; //如果请求的类型和服务器所支持的类型不一致时，返回406
+                //定义缓存策略
+                setup.CacheProfiles.Add("120sCacheProfile", new CacheProfile
+                {
+                    Duration = 120
+                });
             })
                 .AddNewtonsoftJson(setup =>
                 {
@@ -110,6 +129,10 @@ namespace Routine.Api
                     });
                 });
             }
+
+            //app.UseResponseCaching(); //缓存
+
+            app.UseHttpCacheHeaders(); //过期模型 验证模型 缓存
 
             app.UseRouting();//用来标记路由决策在请求管道里发生的位置，也就是在这里会选择端点
 
